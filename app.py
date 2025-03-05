@@ -30,6 +30,11 @@ data = {
 @app.route("/slack/events", methods=["POST"])
 def slack_events():
     event_data = request.json
+
+    # Handle Slack Challenge Verification
+    if "challenge" in event_data:
+        return jsonify({"challenge": event_data["challenge"]})
+
     if "event" in event_data:
         event = event_data["event"]
         if event.get("type") == "app_mention":
@@ -40,11 +45,12 @@ def slack_events():
 
             for brand, details in data.items():
                 if brand.lower() in user_query:
-                    response_message = f"*{brand} Support Information:*\nWarranty: {details['warranty']}\nTech Support: {details['tech_support']}\nDistributors: {', '.join(details['distributors'])}"
+                    response_message = f"*{brand} Support Information:*\\nWarranty: {details['warranty']}\\nTech Support: {details['tech_support']}\\nDistributors: {', '.join(details['distributors'])}"
                     break
 
             client.chat_postMessage(channel=channel, text=response_message)
+
     return jsonify({"status": "ok"})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=10000)
